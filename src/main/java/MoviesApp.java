@@ -44,18 +44,45 @@ public class MoviesApp {
 
     }
 
-    public static void addMovie() {
+    private static void addMovie() {
+        Scanner scanner = new Scanner(System.in);
 
-        Scanner s = new Scanner(System.in);
+        System.out.print("Enter movie title: ");
+        String title = scanner.nextLine();
 
-        System.out.println("Enter movie name: ");
-        String movie = s.nextLine();
+        String releaseDate = "";
+        while (true) {
+            System.out.print("Enter movie release date (between 1800 and 2100): ");
+            releaseDate = scanner.nextLine();
 
-        movies.add(movie);
+            // Validate release date
+            if (releaseDate.matches("[0-9]{4}") &&
+                    Integer.parseInt(releaseDate) >= 1800 &&
+                    Integer.parseInt(releaseDate) <= 2100) {
+                break;
+            } else {
+                System.out.println("Invalid release date. Please try again.");
+            }
+        }
+
+        System.out.print("Enter movie genre: ");
+        String genre = scanner.nextLine();
+
+        System.out.print("Enter movie rating: ");
+        String rating = scanner.nextLine();
+
+        // Create a movie object
+        Movie movie = new Movie(title, releaseDate, genre, rating);
+
+        System.out.println(movie);
+
+        // Add movie to list
+        movies.add(String.valueOf(movie)) ;
         System.out.println("Movie added.");
-
-
     }
+
+
+
 
     //Method that shows movies stored in the list
 
