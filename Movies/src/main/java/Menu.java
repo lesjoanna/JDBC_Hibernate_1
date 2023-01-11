@@ -1,10 +1,9 @@
+import javax.swing.JOptionPane;
 import java.sql.SQLException;
-import java.util.Scanner;
 
 public class Menu {
     private boolean running = true;
     private Database db;
-    private Scanner scanner = new Scanner(System.in);
 
     public Menu() {
         db = new Database();
@@ -12,66 +11,52 @@ public class Menu {
 
     public void startMenu() {
         do {
-            showOptions();
-            int input = readDecision();
+            int input = showOptions();
             handleOption(input);
         } while (running);
     }
 
-    private void showOptions() {
-        System.out.println("""
-                Wybierz jedną z opcji:
-                1. Dodaj nowy film
-                2. Wyświetl filmy
-                3. Koniec""");
-    }
-
-    private int readDecision() {
-        return scanner.nextInt();
+    private int showOptions() {
+        Object[] options = {"Dodaj nowy film", "Wyświetl filmy", "Koniec"};
+        int input = JOptionPane.showOptionDialog(null, "Wybierz jedną z opcji:",
+                "Menu", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE,
+                null, options, options[0]);
+        return input;
     }
 
     private void handleOption(int input) {
         try {
             executeOption(input);
         } catch (SQLException e) {
-            System.out.println("Błąd zapytania do BD");
+            JOptionPane.showMessageDialog(null, "Błąd zapytania do BD", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
     }
 
     private void executeOption(int input) throws SQLException {
         switch (input) {
-            case 1:
-                Movie movie = readMovieData();
+            case 0:
+                String title = JOptionPane.showInputDialog("Podaj tytuł:");
+                String premiereYearString = JOptionPane.showInputDialog("Podaj rok premiery:");
+                int premiereYear = Integer.parseInt(premiereYearString);
+                if (premiereYear < 1800 || premiereYear > 2100) {
+                    JOptionPane.showMessageDialog(null, "Podano nierealną datę premiery. Powinien być przedział: 1800 - 2100", "Error", JOptionPane.ERROR_MESSAGE);
+                    executeOption(input);
+                }
+                String genre = JOptionPane.showInputDialog("Podaj gatunek:");
+                String rateString = JOptionPane.showInputDialog("Podaj ocenę (1-5):");
+                int rate = Integer.parseInt(rateString);
+                Movie movie = new Movie(title, premiereYear, genre, rate);
                 db.save(movie);
                 break;
-            case 2:
+            case 1:
                 db.showMovies();
                 break;
-            case 3:
+            case 2:
                 end();
                 break;
         }
     }
-
-    private Movie readMovieData() {
-        System.out.print("Podaj tytuł:");
-        String title = scanner.nextLine();
-        System.out.print("Podaj rok premiery:");
-        int premiereYear = scanner.nextInt();
-        if (premiereYear < 1800 || premiereYear > 2100) {
-            System.out.println("Podano nierealną datę premiery. " +
-                    "Powinien być przedział: 1800 - 2100");
-            return readMovieData();
-        }
-        scanner.nextLine();
-        System.out.print("Podaj gatunek:");
-        String genre = scanner.nextLine();
-        System.out.print("Podaj ocenę (1-5):");
-        int rate = scanner.nextInt();
-        return new Movie(title, premiereYear, genre, rate);
-    }
-
     private void end() {
         running = false;
         db.close();
